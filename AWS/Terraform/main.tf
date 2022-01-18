@@ -1,6 +1,5 @@
 # Specify the provider and access details
 provider "aws" {
-  shared_credentials_file = var.shared_credentials_file
   region                  = var.region
   profile                 = var.profile
 }
@@ -169,7 +168,7 @@ resource "aws_key_pair" "auth" {
 }
 
 resource "aws_instance" "logger" {
-  instance_type = "t3.medium"
+  instance_type = var.instance_type_server
   ami           = coalesce(var.logger_ami, data.aws_ami.logger_ami.image_id)
 
   tags = merge(var.custom-tags, tomap(
@@ -215,7 +214,7 @@ resource "aws_instance" "logger" {
 }
 
 resource "aws_instance" "dc" {
-  instance_type = "t3.medium"
+  instance_type = var.instance_type_server
   depends_on = [
     aws_vpc_dhcp_options.default,
     aws_vpc_dhcp_options_association.default
@@ -261,7 +260,7 @@ resource "aws_instance" "dc" {
 }
 
 resource "aws_instance" "wef" {
-  instance_type = "t3.medium"
+  instance_type = var.instance_type_server
     depends_on = [
     aws_vpc_dhcp_options.default,
     aws_vpc_dhcp_options_association.default
@@ -307,7 +306,7 @@ resource "aws_instance" "wef" {
 }
 
 resource "aws_instance" "win10" {
-  instance_type = "t2.large"
+  instance_type = var.instance_type_client
     depends_on = [
     aws_vpc_dhcp_options.default,
     aws_vpc_dhcp_options_association.default

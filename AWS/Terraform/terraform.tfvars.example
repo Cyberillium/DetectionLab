@@ -1,10 +1,10 @@
 region = "us-west-1"
 profile = "terraform"
-shared_credentials_file = "/home/user/.aws/credentials"
+shared_credentials_file = "C:\Users\arbel\.aws\credentials"
 public_key_name = "id_logger"
 public_key_path = "/home/user/.ssh/id_logger.pub"
 private_key_path = "/home/user/.ssh/id_logger"
-ip_whitelist = ["1.2.3.4/32"]
+ip_whitelist = ["109.67.142.54/32"]
 availability_zone = "us-west-1b"
-// instance_name_prefix = "some_prefix_"
+instance_name_prefix = "detection_lab_"
 // custom-tags = {"tag_name": "tag_value"}

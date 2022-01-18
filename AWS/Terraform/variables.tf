@@ -125,3 +125,13 @@ variable "win10_ami" {
   type    = string
   default = ""
 }
+
+variable instance_type_server{ 
+  type    = string
+  default = "t3.medium"
+}
+
+variable instance_type_client{ 
+  type    = string
+  default = "t2.large"
+}
