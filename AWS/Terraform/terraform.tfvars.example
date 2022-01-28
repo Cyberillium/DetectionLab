@@ -7,4 +7,4 @@ private_key_path = "/home/user/.ssh/id_logger"
 ip_whitelist = ["109.67.142.54/32"]
 availability_zone = "us-west-1b"
 instance_name_prefix = "detection_lab_"
-// custom-tags = {"tag_name": "tag_value"}
+custom-tags = {"from": "detectionlab"}

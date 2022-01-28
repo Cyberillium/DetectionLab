@@ -135,3 +135,33 @@ variable instance_type_client{
   type    = string
   default = "t2.large"
 }
+
+
+
+variable "VPN_client_cidr_block" {
+  description = "The IPv4 address range, in CIDR notation being /22 or greater, from which to assign client IP addresses"
+  default     = "192.169.0.0/16"
+}
+
+variable "VPN_name" {
+  default = "DetectionLab VPN"
+}
+
+variable "VPN_server_cert" {
+  description = "Server certificate"
+}
+
+variable "VPN_client_cert" {
+  description = "Client/Root certificate"
+}
+
+variable "VPN_split_tunnel" {
+  default = true
+  description = "With split_tunnel false, all client traffic will go through the VPN."
+
+}
+
+variable "VPN_dns_servers" {
+  type = list
+  default = []
+}

@@ -179,7 +179,7 @@ resource "aws_instance" "logger" {
   vpc_security_group_ids = [aws_security_group.logger.id]
   key_name               = aws_key_pair.auth.key_name
   private_ip             = "192.168.56.105"
-
+/*
   provisioner "remote-exec" {
     inline = [
       "sudo apt-get -qq update",
@@ -206,7 +206,7 @@ resource "aws_instance" "logger" {
       password    = "vagrant"
     }
   }
-
+*/
   root_block_device {
     delete_on_termination = true
     volume_size           = 64 
@@ -219,7 +219,7 @@ resource "aws_instance" "dc" {
     aws_vpc_dhcp_options.default,
     aws_vpc_dhcp_options_association.default
   ]
-
+/*
   provisioner "file" {
     source      = "scripts/bootstrap.ps1"
     destination = "C:\\Temp\\bootstrap.ps1"
@@ -242,6 +242,7 @@ resource "aws_instance" "dc" {
       host     = coalesce(self.public_ip, self.private_ip)
     }
   }
+*/
 
   # Uses the local variable if external data source resolution fails
   ami = coalesce(var.dc_ami, data.aws_ami.dc_ami.image_id)
@@ -266,6 +267,7 @@ resource "aws_instance" "wef" {
     aws_vpc_dhcp_options_association.default
   ]
 
+/*
   provisioner "file" {
     source      = "scripts/bootstrap.ps1"
     destination = "C:\\Temp\\bootstrap.ps1"
@@ -288,6 +290,7 @@ resource "aws_instance" "wef" {
       host     = coalesce(self.public_ip, self.private_ip)
     }
   }
+*/
 
   # Uses the local variable if external data source resolution fails
   ami = coalesce(var.wef_ami, data.aws_ami.wef_ami.image_id)
@@ -311,7 +314,7 @@ resource "aws_instance" "win10" {
     aws_vpc_dhcp_options.default,
     aws_vpc_dhcp_options_association.default
   ]
-
+/*
   provisioner "file" {
     source      = "scripts/bootstrap.ps1"
     destination = "C:\\Temp\\bootstrap.ps1"
@@ -334,7 +337,7 @@ resource "aws_instance" "win10" {
       host     = coalesce(self.public_ip, self.private_ip)
     }
   }
-
+*/
   # Uses the local variable if external data source resolution fails
   ami = coalesce(var.win10_ami, data.aws_ami.win10_ami.image_id)
 
@@ -350,3 +353,78 @@ resource "aws_instance" "win10" {
     delete_on_termination = true
   }
 }
+
+#
+# https://github.com/DNXLabs/terraform-aws-client-vpn
+# https://cwong47.gitlab.io/technology-terraform-aws-client-vpn/
+# https://github.com/spucman/terraform-aws-client-vpn/blob/main/vpn.tf
+#
+resource "aws_security_group" "client-vpn-access" {
+  vpc_id = aws_vpc.default.id
+  name = "vpn-example-sg"
+
+  ingress {
+    from_port = 443
+    protocol = "UDP"
+    to_port = 443
+    cidr_blocks = [
+      "0.0.0.0/0"]
+    description = "Incoming VPN connection"
+  }
+
+  egress {
+    from_port = 0
+    protocol = "-1"
+    to_port = 0
+    cidr_blocks = [
+      "0.0.0.0/0"]
+  }
+
+  tags = merge(var.custom-tags, tomap(
+    {"Name" = "${var.instance_name_prefix}client_vpn_access"}
+  ))
+}
+
+
+resource "aws_ec2_client_vpn_endpoint" "client-vpn-endpoint" {
+  description            = "detection lab terraform client vpn endpoint"
+  server_certificate_arn = var.VPN_server_cert
+  client_cidr_block      = var.VPN_client_cidr_block
+  split_tunnel           = var.VPN_split_tunnel
+  dns_servers            = var.VPN_dns_servers
+
+  authentication_options {
+    type                       = "certificate-authentication"
+    root_certificate_chain_arn = var.VPN_client_cert
+  }
+
+  connection_log_options {
+    enabled              = false
+  }
+
+  tags = merge(var.custom-tags, tomap(
+    {"Name" = "${var.instance_name_prefix}${var.VPN_name}"}
+  ))
+}
+
+resource "aws_ec2_client_vpn_network_association" "client-vpn-subnets" {
+  
+
+  client_vpn_endpoint_id = aws_ec2_client_vpn_endpoint.client-vpn-endpoint.id
+  subnet_id = aws_subnet.default.id
+  security_groups = [aws_security_group.client-vpn-access.id]
+
+  lifecycle {
+    // The issue why we are ignoring changes is that on every change
+    // terraform screws up most of the vpn assosciations
+    // see: https://github.com/hashicorp/terraform-provider-aws/issues/14717
+    ignore_changes = [subnet_id]
+  }
+}
+
+resource "aws_ec2_client_vpn_authorization_rule" "vpn_auth_rule" {
+  client_vpn_endpoint_id = aws_ec2_client_vpn_endpoint.client-vpn-endpoint.id
+  target_network_cidr = aws_vpc.default.cidr_block
+  authorize_all_groups = true
+}
+
