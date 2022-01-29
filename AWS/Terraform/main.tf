@@ -43,7 +43,6 @@ resource "aws_vpc_dhcp_options" "default" {
 resource "aws_vpc_dhcp_options_association" "default" {
   vpc_id          = aws_vpc.default.id
   dhcp_options_id = aws_vpc_dhcp_options.default.id
-  tags = var.custom-tags
 }
 
 # Our default security group for the logger host
@@ -415,7 +414,6 @@ resource "aws_ec2_client_vpn_network_association" "client-vpn-subnets" {
   client_vpn_endpoint_id = aws_ec2_client_vpn_endpoint.client-vpn-endpoint.id
   subnet_id = aws_subnet.default.id
   security_groups = [aws_security_group.client-vpn-access.id]
-  tags = var.custom-tags
   
   lifecycle {
     // The issue why we are ignoring changes is that on every change
@@ -429,6 +427,5 @@ resource "aws_ec2_client_vpn_authorization_rule" "vpn_auth_rule" {
   client_vpn_endpoint_id = aws_ec2_client_vpn_endpoint.client-vpn-endpoint.id
   target_network_cidr = aws_vpc.default.cidr_block
   authorize_all_groups = true
-  tags = var.custom-tags
 }
 
