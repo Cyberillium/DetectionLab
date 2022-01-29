@@ -22,6 +22,11 @@ output "win10_public_ip" {
   value = aws_instance.win10.public_ip
 }
 
+
+output "win10_private_ip" {
+  value = aws_instance.win10.private_ip
+}
+
 output "ata_url" {
   value = local.ata_url
 }
