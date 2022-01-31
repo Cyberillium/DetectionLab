@@ -106,6 +106,14 @@ resource "aws_security_group" "logger" {
     cidr_blocks = ["192.168.56.0/24"]
   }
 
+  # Allow all traffic from the private VPN
+  ingress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = [var.VPN_client_cidr_block]
+  }
+
   # outbound internet access
   egress {
     from_port   = 0
@@ -151,6 +159,14 @@ resource "aws_security_group" "windows" {
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["192.168.56.0/24"]
+  }
+
+  # Allow all traffic from the private VPN
+  ingress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = [var.VPN_client_cidr_block]
   }
 
   # outbound internet access
