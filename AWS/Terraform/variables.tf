@@ -7,9 +7,9 @@ variable "profile" {
 }
 
 variable "custom-tags" {
-  type = map(string)
+  type        = map(string)
   description = "Optional mapping for additional tags to apply to all related AWS resources"
-  default = {}
+  default     = {}
 }
 
 variable "instance_name_prefix" {
@@ -126,12 +126,12 @@ variable "win10_ami" {
   default = ""
 }
 
-variable instance_type_server{ 
+variable "instance_type_server" {
   type    = string
   default = "t3.medium"
 }
 
-variable instance_type_client{ 
+variable "instance_type_client" {
   type    = string
   default = "t2.large"
 }
@@ -156,12 +156,12 @@ variable "VPN_client_cert" {
 }
 
 variable "VPN_split_tunnel" {
-  default = true
+  default     = true
   description = "With split_tunnel false, all client traffic will go through the VPN."
 
 }
 
 variable "VPN_dns_servers" {
-  type = list
+  type    = list(any)
   default = []
 }

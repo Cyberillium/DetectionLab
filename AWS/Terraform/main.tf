@@ -1,19 +1,19 @@
 # Specify the provider and access details
 provider "aws" {
-  region                  = var.region
-  profile                 = var.profile
+  region  = var.region
+  profile = var.profile
 }
 
 # Create a VPC to launch our instances into
 resource "aws_vpc" "default" {
   cidr_block = "192.168.0.0/16"
-  tags = var.custom-tags
+  tags       = var.custom-tags
 }
 
 # Create an internet gateway to give our subnet access to the outside world
 resource "aws_internet_gateway" "default" {
   vpc_id = aws_vpc.default.id
-  tags = var.custom-tags
+  tags   = var.custom-tags
 }
 
 # Grant the VPC internet access on its main route table
@@ -29,7 +29,7 @@ resource "aws_subnet" "default" {
   cidr_block              = "192.168.56.0/24"
   availability_zone       = var.availability_zone
   map_public_ip_on_launch = true
-  tags = var.custom-tags
+  tags                    = var.custom-tags
 }
 
 # Adjust VPC DNS settings to not conflict with lab
@@ -37,7 +37,7 @@ resource "aws_vpc_dhcp_options" "default" {
   domain_name          = "windomain.local"
   domain_name_servers  = concat(["192.168.56.102"], var.external_dns_servers)
   netbios_name_servers = ["192.168.56.102"]
-  tags = var.custom-tags
+  tags                 = var.custom-tags
 }
 
 resource "aws_vpc_dhcp_options_association" "default" {
@@ -50,7 +50,7 @@ resource "aws_security_group" "logger" {
   name        = "logger_security_group"
   description = "DetectionLab: Security Group for the logger host"
   vpc_id      = aws_vpc.default.id
-  tags = var.custom-tags
+  tags        = var.custom-tags
 
   # SSH access
   ingress {
@@ -91,7 +91,7 @@ resource "aws_security_group" "logger" {
   }
 
   # Velociraptor access
-    ingress {
+  ingress {
     from_port   = 9999
     to_port     = 9999
     protocol    = "tcp"
@@ -127,7 +127,7 @@ resource "aws_security_group" "windows" {
   name        = "windows_security_group"
   description = "DetectionLab: Security group for the Windows hosts"
   vpc_id      = aws_vpc.default.id
-  tags = var.custom-tags
+  tags        = var.custom-tags
 
   # RDP
   ingress {
@@ -181,7 +181,7 @@ resource "aws_security_group" "windows" {
 resource "aws_key_pair" "auth" {
   key_name   = var.public_key_name
   public_key = file(var.public_key_path)
-  tags = var.custom-tags
+  tags       = var.custom-tags
 }
 
 resource "aws_instance" "logger" {
@@ -189,14 +189,14 @@ resource "aws_instance" "logger" {
   ami           = coalesce(var.logger_ami, data.aws_ami.logger_ami.image_id)
 
   tags = merge(var.custom-tags, tomap(
-    {"Name" = "${var.instance_name_prefix}logger"}
+    { "Name" = "${var.instance_name_prefix}logger" }
   ))
 
   subnet_id              = aws_subnet.default.id
   vpc_security_group_ids = [aws_security_group.logger.id]
   key_name               = aws_key_pair.auth.key_name
   private_ip             = "192.168.56.105"
-/*
+  /*
   provisioner "remote-exec" {
     inline = [
       "sudo apt-get -qq update",
@@ -226,7 +226,7 @@ resource "aws_instance" "logger" {
 */
   root_block_device {
     delete_on_termination = true
-    volume_size           = 64 
+    volume_size           = 64
   }
 }
 
@@ -236,7 +236,7 @@ resource "aws_instance" "dc" {
     aws_vpc_dhcp_options.default,
     aws_vpc_dhcp_options_association.default
   ]
-/*
+  /*
   provisioner "file" {
     source      = "scripts/bootstrap.ps1"
     destination = "C:\\Temp\\bootstrap.ps1"
@@ -265,7 +265,7 @@ resource "aws_instance" "dc" {
   ami = coalesce(var.dc_ami, data.aws_ami.dc_ami.image_id)
 
   tags = merge(var.custom-tags, tomap(
-    {"Name" = "${var.instance_name_prefix}dc.windomain.local"}
+    { "Name" = "${var.instance_name_prefix}dc.windomain.local" }
   ))
 
   subnet_id              = aws_subnet.default.id
@@ -279,12 +279,12 @@ resource "aws_instance" "dc" {
 
 resource "aws_instance" "wef" {
   instance_type = var.instance_type_server
-    depends_on = [
+  depends_on = [
     aws_vpc_dhcp_options.default,
     aws_vpc_dhcp_options_association.default
   ]
 
-/*
+  /*
   provisioner "file" {
     source      = "scripts/bootstrap.ps1"
     destination = "C:\\Temp\\bootstrap.ps1"
@@ -313,7 +313,7 @@ resource "aws_instance" "wef" {
   ami = coalesce(var.wef_ami, data.aws_ami.wef_ami.image_id)
 
   tags = merge(var.custom-tags, tomap(
-    {"Name" = "${var.instance_name_prefix}wef.windomain.local"}
+    { "Name" = "${var.instance_name_prefix}wef.windomain.local" }
   ))
 
   subnet_id              = aws_subnet.default.id
@@ -327,11 +327,11 @@ resource "aws_instance" "wef" {
 
 resource "aws_instance" "win10" {
   instance_type = var.instance_type_client
-    depends_on = [
+  depends_on = [
     aws_vpc_dhcp_options.default,
     aws_vpc_dhcp_options_association.default
   ]
-/*
+  /*
   provisioner "file" {
     source      = "scripts/bootstrap.ps1"
     destination = "C:\\Temp\\bootstrap.ps1"
@@ -359,7 +359,7 @@ resource "aws_instance" "win10" {
   ami = coalesce(var.win10_ami, data.aws_ami.win10_ami.image_id)
 
   tags = merge(var.custom-tags, tomap(
-    {"Name" = "${var.instance_name_prefix}win10.windomain.local"}
+    { "Name" = "${var.instance_name_prefix}win10.windomain.local" }
   ))
 
   subnet_id              = aws_subnet.default.id
@@ -378,27 +378,27 @@ resource "aws_instance" "win10" {
 #
 resource "aws_security_group" "client-vpn-access" {
   vpc_id = aws_vpc.default.id
-  name = "vpn-example-sg"
+  name   = "vpn-example-sg"
 
   ingress {
     from_port = 443
-    protocol = "UDP"
-    to_port = 443
+    protocol  = "UDP"
+    to_port   = 443
     cidr_blocks = [
-      "0.0.0.0/0"]
+    "0.0.0.0/0"]
     description = "Incoming VPN connection"
   }
 
   egress {
     from_port = 0
-    protocol = "-1"
-    to_port = 0
+    protocol  = "-1"
+    to_port   = 0
     cidr_blocks = [
-      "0.0.0.0/0"]
+    "0.0.0.0/0"]
   }
 
   tags = merge(var.custom-tags, tomap(
-    {"Name" = "${var.instance_name_prefix}client_vpn_access"}
+    { "Name" = "${var.instance_name_prefix}client_vpn_access" }
   ))
 }
 
@@ -416,21 +416,21 @@ resource "aws_ec2_client_vpn_endpoint" "client-vpn-endpoint" {
   }
 
   connection_log_options {
-    enabled              = false
+    enabled = false
   }
 
   tags = merge(var.custom-tags, tomap(
-    {"Name" = "${var.instance_name_prefix}${var.VPN_name}"}
+    { "Name" = "${var.instance_name_prefix}${var.VPN_name}" }
   ))
 }
 
 resource "aws_ec2_client_vpn_network_association" "client-vpn-subnets" {
-  
+
 
   client_vpn_endpoint_id = aws_ec2_client_vpn_endpoint.client-vpn-endpoint.id
-  subnet_id = aws_subnet.default.id
-  security_groups = [aws_security_group.client-vpn-access.id]
-  
+  subnet_id              = aws_subnet.default.id
+  security_groups        = [aws_security_group.client-vpn-access.id]
+
   lifecycle {
     // The issue why we are ignoring changes is that on every change
     // terraform screws up most of the vpn assosciations
@@ -441,7 +441,7 @@ resource "aws_ec2_client_vpn_network_association" "client-vpn-subnets" {
 
 resource "aws_ec2_client_vpn_authorization_rule" "vpn_auth_rule" {
   client_vpn_endpoint_id = aws_ec2_client_vpn_endpoint.client-vpn-endpoint.id
-  target_network_cidr = aws_vpc.default.cidr_block
-  authorize_all_groups = true
+  target_network_cidr    = aws_vpc.default.cidr_block
+  authorize_all_groups   = true
 }
 
